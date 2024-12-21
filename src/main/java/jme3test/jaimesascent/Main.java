@@ -35,6 +35,9 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.renderer.RenderManager;
 import com.jme3.system.AppSettings;
+import com.simsilica.lemur.GuiGlobals;
+import jme3test.jaimesascent.screen.GameGUIScreen;
+import jme3test.jaimesascent.ui.LemurGuiStyle;
 
 /**
  * Chasecam example game with animations, physics and mouse look. Use the mouse
@@ -59,13 +62,23 @@ public class Main extends SimpleApplication {
     }
 
     @Override
-    public void simpleInitApp() {
+    public void simpleInitApp() {        
+        flyCam.setEnabled(false);
+        flyCam.unregisterInput();
+        
+        LemurGuiStyle.initialize(this);
+        
         bulletAppState = new BulletAppState();
         gameState = new GameState(bulletAppState);
         sceneState = new SceneState(bulletAppState);
+        stateManager.attach(new GameGUIScreen());
         stateManager.attach(bulletAppState);
         stateManager.attach(gameState);
         stateManager.attach(sceneState);
+    }
+    
+    public AppSettings getSettings() {
+        return settings;
     }
 
     @Override
