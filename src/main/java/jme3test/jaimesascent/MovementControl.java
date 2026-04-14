@@ -98,6 +98,16 @@ public class MovementControl extends AbstractControl implements ActionListener {
     }
 
     @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (! enabled) {
+            if (!currentAnimation.equals("Idle")) {
+                animControl.setCurrentAction(currentAnimation = "Idle");
+            }
+        }
+    }
+
+    @Override
     protected void controlRender(RenderManager rm, ViewPort vp) {
     }
 

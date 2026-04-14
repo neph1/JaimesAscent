@@ -26,6 +26,7 @@ repositories {
 
 project.ext {
   jmeVer = '3.9.0-stable'
+  guavaVersion = '33.3.1-jre'
 }
 
 project(":assets") {
@@ -66,6 +67,11 @@ dependencies {
   
   // Physics Library
   implementation "com.github.stephengold:Minie:8.0.0"
+
+  // Lemur UI
+  implementation "com.simsilica:lemur:1.16.0"
+  implementation "com.simsilica:lemur-proto:1.13.0"
+  implementation "com.google.guava:guava:$guavaVersion"
 
   // Additional Libraries
   implementation "com.github.stephengold:Heart:9.0.0"

@@ -47,6 +47,9 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
+import jme3test.jaimesascent.screen.GameGUIScreen;
+import jme3test.jaimesascent.ui.Window;
+import jme3test.jaimesascent.ui.WindowListener;
 
 /**
  *
@@ -54,7 +57,7 @@ import com.jme3.scene.Node;
  *
  * @author rickard
  */
-public class GameState extends BaseAppState {
+public class GameState extends BaseAppState implements WindowListener<Integer> {
 
     private final BulletAppState physicsState;
     private InputManager inputManager;
@@ -62,6 +65,8 @@ public class GameState extends BaseAppState {
     private Camera cam;
     private Node rootNode;
 
+    private GameGUIScreen uiScreen;
+    
     private BetterCharacterControl physicsCharacter;
     private Node playerNode;
     private MovementControl moveControl;
@@ -80,6 +85,9 @@ public class GameState extends BaseAppState {
         this.cam = app.getCamera();
         this.rootNode = ((SimpleApplication) app).getRootNode();
 
+        uiScreen = getState(GameGUIScreen.class);
+        uiScreen.getWindow().addWindosListener(this);
+        
         setupCharacter(app.getAssetManager());
 
         setupKeys();
@@ -88,6 +96,17 @@ public class GameState extends BaseAppState {
 
     }
 
+    @Override
+    public void doAction(Integer value) {
+        pause(value == Window.OPTION_HIDE);
+    }
+
+    private void pause(boolean b) {
+        chaseCam.setEnabled(b);
+        moveControl.setEnabled(b);
+        physicsCharacter.setEnabled(b);
+    }
+    
     @Override
     public void update(float tpf) {
         super.update(tpf);
@@ -103,10 +122,12 @@ public class GameState extends BaseAppState {
 
     @Override
     protected void onEnable() {
+        uiScreen.setEnabled(true);
     }
 
     @Override
     protected void onDisable() {
+        uiScreen.setEnabled(false);
     }
 
     private void reset() {
@@ -132,11 +153,19 @@ public class GameState extends BaseAppState {
                 new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addMapping("Reset",
                 new KeyTrigger(KeyInput.KEY_R));
+        inputManager.addMapping("Mouse", 
+                new KeyTrigger(KeyInput.KEY_LMENU));
         inputManager.addListener(moveControl, "Strafe Left", "Strafe Right");
         inputManager.addListener(moveControl, "Walk Forward", "Walk Backward");
+        inputManager.addListener((ActionListener) (String string, boolean bln, float f) -> {
+            if ("Mouse".equals(string) && !uiScreen.getWindow().isVisible()) {
+                inputManager.setCursorVisible(bln);
+                pause(!bln);
+            }
+        }, "Mouse");
         inputManager.addListener(moveControl, "Jump");
         inputManager.addListener((ActionListener) (String string, boolean bln, float f) -> {
-            if (!bln) {
+            if (!bln && !uiScreen.getWindow().isVisible()) {
                 reset();
             }
         }, "Reset");
