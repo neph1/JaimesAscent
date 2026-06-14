@@ -5,8 +5,7 @@ plugins {
 }
 
 group 'jme3test.jaimesascent'
-version '1.1.2'
-mainClassName = 'jme3test.jaimesascent.Main'
+version '1.1.3'
 
 application {
     applicationName = 'JaimesAscent'
@@ -44,7 +43,7 @@ project(":assets") {
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
+            languageVersion = JavaLanguageVersion.of(25)
         }
     }
 }
@@ -88,7 +87,7 @@ jar {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -126,7 +125,7 @@ task copyJars(type: Copy) {
  */
 task releaseJar(type: Jar, dependsOn: copyJars) {
     manifest {
-        attributes("Main-Class": mainClassName,
+        attributes("Main-Class": "${application.mainClass}",
                 "Class-Path": sourceSets.main.runtimeClasspath.filter {it.isFile() }.collect { "dependencies/${it.name}" }.join(' '))
     }
     //tag the jar task to inject this task into it
@@ -190,7 +189,7 @@ task createLinuxDist() {
         
         copy {
             from fileTree("${projectDir}/src/main/resources/")
-            into "$projectDir/build/distributions/${distName}/jaimesascent-${version}/bin/" 
+            into "$projectDir/build/distributions/${distName}/${application.applicationName}-${version}/bin/" 
         }
     }
 }
@@ -239,7 +238,7 @@ task createWindowsDistx64() {
         
         copy {
             from fileTree("${projectDir}/src/main/resources/")
-            into "$projectDir/build/distributions/${distName}/jaimesascent-${version}/bin/" 
+            into "$projectDir/build/distributions/${distName}/${application.applicationName}-${version}/bin/" 
         }
     }
 }
