@@ -1,11 +1,11 @@
 plugins {
     id 'java'
     id 'application'
-    id 'edu.sc.seis.launch4j' version '2.4.6'
+    id 'edu.sc.seis.launch4j' version '4.0.0'
 }
 
-group 'jme3test.jaimesascent'
-version '1.1.3'
+group = 'jme3test.jaimesascent'
+version = '1.1.3'
 
 application {
     applicationName = 'JaimesAscent'
@@ -18,7 +18,7 @@ application {
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
+    maven { url = 'https://jitpack.io' }
 }
 
 
@@ -65,7 +65,7 @@ dependencies {
   implementation "org.jmonkeyengine:jme3-plugins:$jmeVer"
   
   // Physics Library
-  implementation "com.github.stephengold:Minie:8.0.0"
+    implementation "com.github.stephengold:Minie:9.0.3"
 
   // Lemur UI
   implementation "com.simsilica:lemur:1.16.0"
@@ -73,7 +73,7 @@ dependencies {
   implementation "com.google.guava:guava:$guavaVersion"
 
   // Additional Libraries
-  implementation "com.github.stephengold:Heart:9.0.0"
+    implementation "com.github.stephengold:Heart:9.3.0"
 
   // Assets sub-project
   runtimeOnly project(':assets')
@@ -107,13 +107,13 @@ startScripts {
 }
 
 
-task copyJars(type: Copy) {
-    from (sourceSets.main.runtimeClasspath){
+tasks.register('copyJars', Copy) {
+    from(sourceSets.main.runtimeClasspath) {
         include '**/*.jar';
     }
-    from(sourceSets.main.compileClasspath){
+    from(sourceSets.main.compileClasspath) {
         include '**/*.jar';
-        
+
     }
     into('build/libs/dependencies')
     includeEmptyDirs = false
@@ -123,60 +123,60 @@ task copyJars(type: Copy) {
 /**
  * A Suggestion of better code by : Mikhail Bobrutskov (aka wizzardo)
  */
-task releaseJar(type: Jar, dependsOn: copyJars) {
+tasks.register('releaseJar', Jar) {
+    dependsOn copyJars
     manifest {
         attributes("Main-Class": "${application.mainClass}",
-                "Class-Path": sourceSets.main.runtimeClasspath.filter {it.isFile() }.collect { "dependencies/${it.name}" }.join(' '))
+                "Class-Path": sourceSets.main.runtimeClasspath.filter { it.isFile() }.collect { "dependencies/${it.name}" }.join(' '))
     }
     //tag the jar task to inject this task into it
     with jar
 }
 
-task jre_win_x64 {
-    
+tasks.register('jre_win_x64') {
+
     doLast {
         String jre_folder = project.properties["jre_name"]
         project.delete(fileTree("$projectDir/build/distributions/win_x64/$jre_folder"))
         copy {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             from zipTree(project.properties["jre_file_win_x64"])
-            into "$projectDir/build/distributions/win_x64/" 
+            into "$projectDir/build/distributions/win_x64/"
         }
     }
 }
 
-task jre_linux_x64 {
+tasks.register('jre_linux_x64') {
     doLast {
         String jre_folder = project.properties["jre_name"]
         project.delete(fileTree("$projectDir/build/distributions/linux_x64/$jre_folder"))
         copy {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             from zipTree(project.properties["jre_file_linux_x64"])
-            into "$projectDir/build/distributions/linux_x64/" 
+            into "$projectDir/build/distributions/linux_x64/"
         }
     }
 }
 
 createAllExecutables.dependsOn jre_win_x64
 
-task createExe_x64(type: edu.sc.seis.launch4j.tasks.Launch4jLibraryTask) {
+tasks.register('createExe_x64', edu.sc.seis.launch4j.tasks.Launch4jLibraryTask) {
     bundledJrePath = project.properties["jre_name"]
-    bundledJre64Bit = true
-    jar = "jaimes-ascent.jar"
+    requires64Bit = true
     outfile = 'jaimes-ascent.exe'
     icon = "${projectDir}/icon.ico"
     companyName = ''
     outputDir = "distributions/win_x64"
 }
 
-task createLinuxDist() {
+tasks.register('createLinuxDist') {
     String distName = 'linux_x64';
     doLast {
         copy {
             from tarTree(file("${projectDir}/build/distributions/${application.applicationName}-${version}.tar"))
             include "${application.applicationName}-${version}/**"
             //exclude '**/jme3-core-3.5.2-stable.jar'
-            into "$projectDir/build/distributions/${distName}/" 
+            into "$projectDir/build/distributions/${distName}/"
         }
 
         String jre_folder = project.properties["jre_name"]
@@ -184,24 +184,24 @@ task createLinuxDist() {
         copy {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             from tarTree(project.properties["jre_file_linux_x64"])
-            into "$projectDir/build/distributions/${distName}/" 
+            into "$projectDir/build/distributions/${distName}/"
         }
-        
+
         copy {
             from fileTree("${projectDir}/src/main/resources/")
-            into "$projectDir/build/distributions/${distName}/${application.applicationName}-${version}/bin/" 
+            into "$projectDir/build/distributions/${distName}/${application.applicationName}-${version}/bin/"
         }
     }
 }
 
-task createMacDist() {
+tasks.register('createMacDist') {
     String distName = 'mac_x64';
     doLast {
         copy {
             from zipTree(file("${projectDir}/build/distributions/${application.applicationName}-${version}.zip"))
             include "${application.applicationName}-${version}/**"
             //exclude '**/jme3-core-3.5.2-stable.jar'
-            into "$projectDir/build/distributions/${distName}/" 
+            into "$projectDir/build/distributions/${distName}/"
         }
 
         String jre_folder = project.properties["jre_name"]
@@ -209,23 +209,23 @@ task createMacDist() {
         copy {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             from tarTree(project.properties["jre_file_${distName}"])
-            into "$projectDir/build/distributions/${distName}/" 
+            into "$projectDir/build/distributions/${distName}/"
         }
         def exec = file("$projectDir/build/distributions/${distName}/jaimesascent-$version/bin/jaimesascent");
         def replaced = exec.text.replace('DEFAULT_JVM_OPTS=""', 'DEFAULT_JVM_OPTS="-XstartOnFirstThread"')
         exec.write(replaced, "UTF-8")
-    
+
     }
 }
 
-task createWindowsDistx64() {
+tasks.register('createWindowsDistx64') {
     String distName = 'win_x64';
     doLast {
         copy {
             from zipTree(file("${projectDir}/build/distributions/${application.applicationName}-${version}.zip"))
             include "${application.applicationName}-${version}/**"
             //exclude '**/jme3-core-3.5.2-stable.jar'
-            into "$projectDir/build/distributions/${distName}/" 
+            into "$projectDir/build/distributions/${distName}/"
         }
 
         String jre_folder = project.properties["jre_name"]
@@ -233,12 +233,12 @@ task createWindowsDistx64() {
         copy {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             from zipTree(project.properties["jre_file_${distName}"])
-            into "$projectDir/build/distributions/${distName}/" 
+            into "$projectDir/build/distributions/${distName}/"
         }
-        
+
         copy {
             from fileTree("${projectDir}/src/main/resources/")
-            into "$projectDir/build/distributions/${distName}/${application.applicationName}-${version}/bin/" 
+            into "$projectDir/build/distributions/${distName}/${application.applicationName}-${version}/bin/"
         }
     }
 }
